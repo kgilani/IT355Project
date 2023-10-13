@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <cstdio>
+#include <cctype>
 
 using namespace std;
 
@@ -67,29 +68,66 @@ private:
     exit(0);
 }
 
-string checkName(string name)
+bool isValidName(string name)
 {
-    string output;
+    string charactersToInclude = "abcdefghijklmnopqrstuvwxyz";
 
     // STR52-CPP: Use valid references, pointers, and iterators to reference elements of a basic_string
     for (char c : name)
     {
-        if (c != "a", "b", "c")
+        char lowercaseC = std::tolower(c);
+        if (charactersToInclude.find(lowercaseC) == string::npos)
+        {
+            return false;
+        }
     }
+
+    return true;
 }
 
 int main()
 {
-    // STR50-CPP: Guarantee that storage for strings has sufficient space for character data and the null terminator
+    // STR51-CPP: Do not attempt to create a std::string from a null pointer
+    const char *hello = "Hello";
+    string greeting;
+    if (hello != nullptr)
+    {
+        greeting = hello;
+    }
+    else
+    {
+        std::cout << "Invalid string pointer."
+                  << "\n";
+    }
+
     string name;
-    cout << "What is your name? ";
-    cin >> name;
-    checkName(name);
+    do
+    {
+        cout << "What is your name? ";
+        // STR50-CPP: Guarantee that storage for strings has sufficient space for character data and the null terminator
+        cin >> name;
+
+        if (!isValidName(name))
+        {
+            cout << "Please correct your input. ";
+        }
+    } while (!isValidName(name));
+
+    // STR53-CPP: Range check element access
+    try
+    {
+        name.at(20);
+        cout << "Wow your name is long!\n";
+    }
+    catch (std::out_of_range &ex)
+    {
+        // Continue as normal
+    }
 
     // EXP53-CPP: Do not read uninitialized memory.
     // Since the spot in memory for 'intro' was already initialized, we do not have to worry about reading
     // from an uninitialized variable
-    cout << "Hello " << name << ", " << intro;
+    cout << greeting << " " << name << ", " << intro;
 
     // FIO01-C: Be careful using functions that use file names for identification.
     //
