@@ -19,6 +19,12 @@ static const char *intro = "Welcome to the Trivia Game\n";
 /**
  * @brief Rules that are simply avoided in the program to be compliant.
  *
+ *Rule
+ *
+ *Rule: STR00-C. Represent characters using an appropriate type.
+ *Throughout this entire program we are assigning characters to their correct types.
+ *Strings receive the string type, booleans receive the bool type, and integers receive the int type for example.
+ *
  * Rule: ERR50-CPP. Do not abruptly terminate the program.
  *
  * OOP55: Do not use pointer-to-member operators to access nonexistent members.
@@ -70,11 +76,23 @@ private:
     exit(0);
 }
 
+/**
+ *@brief STR02-C: Sanitize data passed to complex subsystems.
+ *While we don't necessarily have a subsystem per say we are still sanitizing the data by only whitelisting the alphabet.
+ *This ensures that only the values we want are apart of the string and there is no malicious content.
+ *
+ *@param name is the name the user inputs when they run the program.
+ *
+ *@return true if the name contains only letters in the english alphabet otherwise false.
+ */
 bool isValidName(string name)
 {
     string charactersToInclude = "abcdefghijklmnopqrstuvwxyz";
 
-    // STR52-CPP: Use valid references, pointers, and iterators to reference elements of a basic_string
+    /**
+     *@brief STR52-CPP: Use valid references, pointers, and iterators to reference elements of a basic_string.
+     *Here we are using a for loop which ensures that we don't use invalid references, pointers, or iterators to reference the basic_string.
+     */
     for (char c : name)
     {
         char lowercaseC = std::tolower(c);
@@ -89,7 +107,10 @@ bool isValidName(string name)
 
 int main()
 {
-    // STR51-CPP: Do not attempt to create a std::string from a null pointer
+    /**
+     *@brief STR51-CPP: Do not attempt to create a std::string from a null pointer.
+     *We want to create a string from a pointer here and we run an if else statement to make sure we do not attempt to create a string from a null pointer.
+     */
     const char *hello = "Hello";
     string greeting;
     if (hello != nullptr)
@@ -106,7 +127,10 @@ int main()
     do
     {
         cout << "What is your name? ";
-        // STR50-CPP: Guarantee that storage for strings has sufficient space for character data and the null terminator
+        /**
+         *@brief STR50-CPP: Guarantee that storage for strings has sufficient space for character data and the null terminator
+         *Utilizing cin with a string as opposed to a buffer we are ensuring that we have sufficient space for this data.
+         */
         cin >> name;
 
         if (!isValidName(name))
@@ -115,7 +139,10 @@ int main()
         }
     } while (!isValidName(name));
 
-    // STR53-CPP: Range check element access
+    /**
+     *@brief STR53-CPP: Range check element access.
+     *Here we are utilizing a try catch statement to ensure that we do not try to access an element that is out of range.
+     */
     try
     {
         name.at(20);
