@@ -1,5 +1,3 @@
-#include "BigCode.h"
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,11 +8,11 @@
 using namespace std;
 
 /**
- *@brief This is a global variable created to introduce the user to the game.
+ * @brief This is a global variable created to introduce the user to the game.
  *
- *Rule: ERR58-CPP. Handle all exceptions thrown before main() begins executing.
- *This ensures that we are following this as we are creating a global string
- *which will result no exceptions during startup or termination of the program
+ * Rule: ERR58-CPP. Handle all exceptions thrown before main() begins executing.
+ * This ensures that we are following this as we are creating a global string
+ * which will result in no exceptions during startup or termination of the program.
  */
 static const char *intro = "Welcome to the Trivia Game\n";
 
@@ -23,28 +21,35 @@ static const char *intro = "Welcome to the Trivia Game\n";
  *
  *Rule: ERR50-CPP. Do not abruptly terminate the program.
  *
+ *Rule
+ *
+ *Rule: STR00-C. Represent characters using an appropriate type.
+ *Throughout this entire program we are assigning characters to their correct types.
+ *Strings receive the string type, booleans receive the bool type, and integers receive the int type for example.
+ *
  */
 class Question
 {
     string question;
-    bool anwser;
+    bool answer;
 
 public:
     // OOP53-CPP. Write constructor member initializers in the canonical order
-    Question(string q) : question(q), anwser() virtual ~Question() { deleteQuestion(); }
+    Question(string q) : question(q), answer(false) {}
 
-protected:
+    virtual ~Question() {}
+
 private:
     /**
-     *@brief OOP57: Prefer special member functions and overloaded operators to C Standard Library functions.
-     *while performing a copy, we are using an overloaded function as opposed to a C function like strcpy()
-     *@brief OOP58: Copy operations must not mutate the source object.
-     *Altough there is a copy being made, the original source object (otherQuestion)is not altered in any way
+     * @brief OOP57: Prefer special member functions and overloaded operators to C Standard Library functions.
+     * While performing a copy, we are using an overloaded function as opposed to a C function like strcpy()
+     * @brief OOP58: Copy operations must not mutate the source object.
+     * Although there is a copy being made, the original source object (otherQuestion) is not altered in any way.
      *
-     *@param otherQuestion is the source object of the copy. The question itself and the answer will be copied
-     *to the calling question
+     * @param otherQuestion is the source object of the copy. The question itself and the answer will be copied
+     * to the calling question.
      *
-     *@return *this which is the copied Question
+     * @return *this which is the copied Question
      */
     Question &operator=(const Question &otherQuestion)
     {
@@ -63,16 +68,29 @@ private:
     // ERR01-C Use ferror() rather than errno to check for FILE stream errors
     if (ferror(outputFile))
     {
-        throw "Error: Failed to write to file" fclose(outputFile)
+        throw "Error: Failed to write to file";
     }
+    fclose(outputFile); // Fixed the missing semicolon
     exit(0);
 }
 
+/**
+ *@brief STR02-C: Sanitize data passed to complex subsystems.
+ *While we don't necessarily have a subsystem per say we are still sanitizing the data by only whitelisting the alphabet.
+ *This ensures that only the values we want are apart of the string and there is no malicious content.
+ *
+ *@param name is the name the user inputs when they run the program.
+ *
+ *@return true if the name contains only letters in the english alphabet otherwise false.
+ */
 bool isValidName(string name)
 {
     string charactersToInclude = "abcdefghijklmnopqrstuvwxyz";
 
-    // STR52-CPP: Use valid references, pointers, and iterators to reference elements of a basic_string
+    /**
+     *@brief STR52-CPP: Use valid references, pointers, and iterators to reference elements of a basic_string.
+     *Here we are using a for loop which ensures that we don't use invalid references, pointers, or iterators to reference the basic_string.
+     */
     for (char c : name)
     {
         char lowercaseC = std::tolower(c);
@@ -87,7 +105,10 @@ bool isValidName(string name)
 
 int main()
 {
-    // STR51-CPP: Do not attempt to create a std::string from a null pointer
+    /**
+     *@brief STR51-CPP: Do not attempt to create a std::string from a null pointer.
+     *We want to create a string from a pointer here and we run an if else statement to make sure we do not attempt to create a string from a null pointer.
+     */
     const char *hello = "Hello";
     string greeting;
     if (hello != nullptr)
@@ -104,7 +125,10 @@ int main()
     do
     {
         cout << "What is your name? ";
-        // STR50-CPP: Guarantee that storage for strings has sufficient space for character data and the null terminator
+        /**
+         *@brief STR50-CPP: Guarantee that storage for strings has sufficient space for character data and the null terminator
+         *Utilizing cin with a string as opposed to a buffer we are ensuring that we have sufficient space for this data.
+         */
         cin >> name;
 
         if (!isValidName(name))
@@ -113,7 +137,10 @@ int main()
         }
     } while (!isValidName(name));
 
-    // STR53-CPP: Range check element access
+    /**
+     *@brief STR53-CPP: Range check element access.
+     *Here we are utilizing a try catch statement to ensure that we do not try to access an element that is out of range.
+     */
     try
     {
         name.at(20);
@@ -133,30 +160,26 @@ int main()
     //
     ifstream questionFile("triviaquestions.txt");
 
-    if (!"triviaquestions.txt".is_open())
-    {
-        cerr << "Trouble opening the file." return (1);
+    if (!questionFile.is_open())
+    { // Fixed the incorrect condition
+        cerr << "Trouble opening the file.";
+        return 1;
     }
 
     vector<Question> questions;
-    while (!questionFile.eof())
-    {
-        Question questions;
-
-        // FIO20-C: Avoid unintentional truncation when using fgets() or fgetws().
-        // Luckily, C++ was prepared for issues that C wasn't prepared for. Although, we could use fgets()
-        // and check for trunctation, we can simply use C++'s getline() which is much safer and checks
-        // truncation for us
-        questionFile.getline();
+    string line;
+    while (getline(questionFile, line))
+    { // Fixed the getline usage
+        questions.push_back(Question(line));
     }
 
     FILE *outputFile = fopen("output.txt", "w");
-    if (outputFile = nullptr)
-    {
+    if (outputFile == nullptr)
+    { // Fixed the assignment and condition
         cerr << "Error: Could not open output file" << endl;
         return 1;
     }
-    // write something to output file here
+    // Write something to the output file here
 
     checkOutFile(outputFile);
 
