@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <cstdio>
+#include <random>
 #include <cctype>
 
 using namespace std;
@@ -16,13 +17,13 @@ using namespace std;
  */
 
   //ERR58-CPP: Handle all exceptions thrown before main() begins executing
+  void openFile() {
     try {
-        //opening the file?
-    } catch (const exception& e) {
-        cerr << "Exception before or during main: " << e.what() << endl;
-        return EXIT_FAILURE;
+        // Opening the file
+    } catch (const std::exception& e) {
+        cerr << "Exception during file opening: " << e.what() << endl;
     }
-
+}
 static const char *intro = "Welcome to the Trivia Game\n";
 
 /**
@@ -86,7 +87,8 @@ bool isValidName(string name)
             // Do something with the invalid character
         }
     }
-    return name; // Added return statement
+   // return name; // Added return statement
+    return true;
 }
 
 //CTR50-CPP: Guarantee that container indices and iterators are within the valid range
@@ -190,9 +192,17 @@ int main()
     
     //ERR56-CPP: Guarantee exception safety
     try {
-        isValidName();  // Performing an operation that might throw an exception
+        isValidName(name);  // Perform an operation that might throw an exception
     } catch (const exception& e) {
         cerr << "Exception caught: " << e.what() << endl;
+    }
+
+    //ERR58-CPP: Handle all exceptions thrown before main() begins executing
+    try {
+        // Access the static object (not really throwing an exception here, just demonstrating)
+    } catch (const std::exception& e) {
+        std::cerr << "Exception before or during main: " << e.what() << std::endl;
+        return EXIT_FAILURE;
     }
 
    
@@ -204,6 +214,7 @@ int main()
     cout << "Result: " << result << endl;
 
 
+   
     // FIO51-CPP. Close files when they are no longer needed
     fclose(outputFile);
 
