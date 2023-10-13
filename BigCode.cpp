@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <random>
 #include <cctype>
+#include <initializer_list>
 
 using namespace std;
 
@@ -117,6 +118,13 @@ void keepScore() {
     cout << "Current score: " << scoreRef << endl;
 }
 
+//DCL50-CPP. Do not define a C-style variadic function
+void print(initializer_list<const char*> args) {
+    for (const auto& arg : args) {
+        cout << arg << " ";
+    }
+}
+
 int main()
 {
     // STR51-CPP: Do not attempt to create a std::string from a null pointer
@@ -135,7 +143,9 @@ int main()
     string name;
     do
     {
-        cout << "What is your name? ";
+        //DCL50-CPP in action
+        print({"What", "is","your","name" "?"});
+       // cout << "What is your name? ";
         // STR50-CPP: Guarantee that storage for strings has sufficient space for character data and the null terminator
         cin >> name;
 
