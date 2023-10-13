@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <cstdio>
 #include <cctype>
 
 using namespace std;
@@ -13,6 +14,15 @@ using namespace std;
  * This ensures that we are following this as we are creating a global string
  * which will result in no exceptions during startup or termination of the program.
  */
+
+  //ERR58-CPP: Handle all exceptions thrown before main() begins executing
+    try {
+        //opening the file?
+    } catch (const exception& e) {
+        cerr << "Exception before or during main: " << e.what() << endl;
+        return EXIT_FAILURE;
+    }
+
 static const char *intro = "Welcome to the Trivia Game\n";
 
 /**
@@ -31,7 +41,6 @@ public:
 
     virtual ~Question() {}
 
- 
 private:
     /**
      * @brief OOP57: Prefer special member functions and overloaded operators to C Standard Library functions.
@@ -79,33 +88,32 @@ bool isValidName(string name)
     }
     return name; // Added return statement
 }
-// Rule: CTR50-CPP: Guarantee that container indices and iterators are within the valid range
-//
+
+//CTR50-CPP: Guarantee that container indices and iterators are within the valid range
+//MSC51-CPP: Ensure your random number generator is properly seeded
+//This function will number questions to be asked. Need to read questions from file
 void numberQuestions() {
-   vector<string> questions = {"Question 1", "Question 2", "Question 3"};
-    int index = 2;  // Index of the question to display
+    vector<string> questions = {"Question 1", "Question 2", "Question 3"};
+    
+    // Use the random number generator to select a random index
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> distribution(0, questions.size() - 1);
+    int index = distribution(gen);
 
     if (index < questions.size()) {
-        cout << "Question at index " << index << ": " << questions[index] << endl;
+        cout << "Randomly selected question: " << questions[index] << endl;
     } else {
         cerr << "Invalid question index." << endl;
     }
 }
 
-// Rule: DCL52-CPP: Never qualify a reference type with const or volatile
+//DCL52-CPP: Never qualify a reference type with const or volatile
 void keepScore() {
     int score = 100;
     int& scoreRef = score;  // Reference to the score
     cout << "Current score: " << scoreRef << endl;
 }
-
-// Rule: DCL53-CPP: Do not write syntactically ambiguous declarations
-void triviaGame3() {
-    int a = 5;
-    int b(10);
-    cout << "a: " << a << ", b: " << b << endl;
-}
-
 
 int main()
 {
@@ -176,7 +184,25 @@ int main()
     }
     // Write something to the output file here
 
+     //ERR59-CPP: Do not throw an exception across execution boundaries
     checkOutFile(outputFile);
+    
+    
+    //ERR56-CPP: Guarantee exception safety
+    try {
+        isValidName();  // Performing an operation that might throw an exception
+    } catch (const exception& e) {
+        cerr << "Exception caught: " << e.what() << endl;
+    }
+
+   
+    // Rule: MSC00-C: Compile cleanly at high warning levels
+    //Ways to use?
+    int a = 10;
+    int b = 1; // Avoid division by zero
+    float result = static_cast<float>(a) / b;
+    cout << "Result: " << result << endl;
+
 
     // FIO51-CPP. Close files when they are no longer needed
     fclose(outputFile);
