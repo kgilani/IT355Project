@@ -20,6 +20,9 @@ static const char *intro = "Welcome to the Trivia Game\n";
  * @brief Rules that are simply avoided in the program to be compliant.
  *
  * Rule: ERR50-CPP. Do not abruptly terminate the program.
+ *
+ * OOP55: Do not use pointer-to-member operators to access nonexistent members.
+ * In this program, we are not using any pointer-to-member operaors to access members of objects through pointers
  */
 class Question
 {
@@ -69,7 +72,6 @@ private:
 
 bool isValidName(string name)
 {
-<<<<<<< HEAD
     string charactersToInclude = "abcdefghijklmnopqrstuvwxyz";
 
     // STR52-CPP: Use valid references, pointers, and iterators to reference elements of a basic_string
@@ -83,17 +85,6 @@ bool isValidName(string name)
     }
 
     return true;
-=======
-    // STR52-CPP: Use valid references, pointers, and iterators to reference elements of a basic_string
-    for (char c : name)
-    {
-        if (c != 'a' && c != 'b' && c != 'c')
-        {
-            // Do something with the invalid character
-        }
-    }
-    return name; // Added return statement
->>>>>>> CameronsBranch
 }
 
 int main()
@@ -141,11 +132,11 @@ int main()
     cout << greeting << " " << name << ", " << intro;
 
     // FIO01-C: Be careful using functions that use file names for identification.
-    //
+    // Instead of using the file name for identificaiton, we'll use the ifstream variable
     ifstream questionFile("triviaquestions.txt");
 
     if (!questionFile.is_open())
-    { // Fixed the incorrect condition
+    {
         cerr << "Trouble opening the file.";
         return 1;
     }
@@ -153,9 +144,24 @@ int main()
     vector<Question> questions;
     string line;
     while (getline(questionFile, line))
-    { // Fixed the getline usage
+    {
         questions.push_back(Question(line));
     }
+
+    // FIO50-CPP: Do not alternately input and output from a file stream without an intervening position call.
+    // Since we are writing to the same file we just read from, we want to make sure that the buffer is flushed and clear
+    questionFile.clear();
+    questionFile.seekg(0);
+    ofstream questionFileOut("triviaquestions.txt", ios::app);
+
+    if (!questionFileOut.is_open())
+    {
+        cerr << "Trouble opening the file.";
+        return 1;
+    }
+
+    questionFileOut << endl
+                    << "All the data has been read from the questions file successfully." << endl;
 
     FILE *outputFile = fopen("output.txt", "w");
     if (outputFile == nullptr)
@@ -169,6 +175,8 @@ int main()
 
     // FIO51-CPP. Close files when they are no longer needed
     fclose(outputFile);
+    questionFileOut.close();
+    questionFile.close();
 
     return 0;
 }
