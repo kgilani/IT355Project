@@ -21,10 +21,25 @@ using namespace std;
   void openFile() {
     try {
         // Opening the file
-    } catch (const std::exception& e) {
+    } catch (const exception& e) {
         cerr << "Exception during file opening: " << e.what() << endl;
     }
 }
+//ERR54-CPP Catch handlers should order their parameter types from most derived to least derived
+class BaseException : public std::exception {
+public:
+    virtual const char* what() const noexcept {
+        return "Base exception";
+    }
+};
+
+class DerivedException : public BaseException {
+public:
+    virtual const char* what() const noexcept override {
+        return "Derived exception";
+    }
+};
+
 static const char *intro = "Welcome to the Trivia Game\n";
 
 /**
@@ -194,28 +209,49 @@ int main()
         cerr << "Error: Could not open output file" << endl;
         return 1;
     }
-    // Write something to the output file here
 
-     //ERR59-CPP: Do not throw an exception across execution boundaries
-    checkOutFile(outputFile);
-    
-    
-    //ERR56-CPP: Guarantee exception safety
+    // Write something to the output file here
+/**
+ * Not the most practical but most exception handling rules are covered in this segment. Feel free to change if needed
+ */
+try {
+    // ERR56-CPP: Guarantee exception safety
+    // Perform an operation that might throw an exception
+    isValidName(name);
+
+
+    // ERR54-CPP: Catch handlers should order their parameter types from most derived to least derived
+  
     try {
-        isValidName(name);  // Perform an operation that might throw an exception
+        isValidName(name);  // Call the function that might throw an exception
     } catch (const exception& e) {
+        // ERR55-CPP: Honor exception specifications
         cerr << "Exception caught: " << e.what() << endl;
     }
 
-    //ERR58-CPP: Handle all exceptions thrown before main() begins executing
-    try {
-        // Access the static object (not really throwing an exception here, just demonstrating)
-    } catch (const std::exception& e) {
-        std::cerr << "Exception before or during main: " << e.what() << std::endl;
+} catch (const exception& e) {
+    // Handle exceptions
+    if (uncaught_exceptions() == 1) {
+        // ERR58-CPP: Handle all exceptions thrown before main() begins executing
+       cerr << "Exception before or during main: " << e.what() << endl;
         return EXIT_FAILURE;
+    } else {
+        // ERR54-CPP: Catch handlers should order their parameter types from most derived to least derived
+        try {
+            // Re-throw the exception to order the catch handlers correctly
+            throw;
+        } catch (DerivedException& derivedE) {
+           cout << "Caught DerivedException: " << derivedE.what() << endl;
+        } catch (BaseException& baseE) {
+            cout << "Caught BaseException: " << baseE.what() << endl;
+        } catch (...) {
+            cout << "Caught an unknown exception." << endl;
+        }
     }
+}
 
-   
+ 
+
     // Rule: MSC00-C: Compile cleanly at high warning levels
     //Ways to use?
     int a = 10;
