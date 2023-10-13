@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <cstdio>
 #include <cctype>
 
 using namespace std;
@@ -32,6 +31,7 @@ public:
 
     virtual ~Question() {}
 
+ 
 private:
     /**
      * @brief OOP57: Prefer special member functions and overloaded operators to C Standard Library functions.
@@ -79,6 +79,33 @@ bool isValidName(string name)
     }
     return name; // Added return statement
 }
+// Rule: CTR50-CPP: Guarantee that container indices and iterators are within the valid range
+//
+void numberQuestions() {
+   vector<string> questions = {"Question 1", "Question 2", "Question 3"};
+    int index = 2;  // Index of the question to display
+
+    if (index < questions.size()) {
+        cout << "Question at index " << index << ": " << questions[index] << endl;
+    } else {
+        cerr << "Invalid question index." << endl;
+    }
+}
+
+// Rule: DCL52-CPP: Never qualify a reference type with const or volatile
+void keepScore() {
+    int score = 100;
+    int& scoreRef = score;  // Reference to the score
+    cout << "Current score: " << scoreRef << endl;
+}
+
+// Rule: DCL53-CPP: Do not write syntactically ambiguous declarations
+void triviaGame3() {
+    int a = 5;
+    int b(10);
+    cout << "a: " << a << ", b: " << b << endl;
+}
+
 
 int main()
 {
