@@ -1,5 +1,3 @@
-#include "BigCode.h"
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -9,41 +7,41 @@
 using namespace std;
 
 /**
- *@brief This is a global variable created to introduce the user to the game.
+ * @brief This is a global variable created to introduce the user to the game.
  *
- *Rule: ERR58-CPP. Handle all exceptions thrown before main() begins executing.
- *This ensures that we are following this as we are creating a global string
- *which will result no exceptions during startup or termination of the program
+ * Rule: ERR58-CPP. Handle all exceptions thrown before main() begins executing.
+ * This ensures that we are following this as we are creating a global string
+ * which will result in no exceptions during startup or termination of the program.
  */
 static const char *intro = "Welcome to the Trivia Game\n";
 
 /**
- *@brief Rules that are simply avoided in the program to be compliant.
+ * @brief Rules that are simply avoided in the program to be compliant.
  *
- *Rule: ERR50-CPP. Do not abruptly terminate the program.
- *
+ * Rule: ERR50-CPP. Do not abruptly terminate the program.
  */
 class Question
 {
     string question;
-    bool anwser;
+    bool answer;
 
 public:
     // OOP53-CPP. Write constructor member initializers in the canonical order
-    Question(string q) : question(q), anwser() virtual ~Question() { deleteQuestion(); }
+    Question(string q) : question(q), answer(false) {}
 
-protected:
+    virtual ~Question() {}
+
 private:
     /**
-     *@brief OOP57: Prefer special member functions and overloaded operators to C Standard Library functions.
-     *while performing a copy, we are using an overloaded function as opposed to a C function like strcpy()
-     *@brief OOP58: Copy operations must not mutate the source object.
-     *Altough there is a copy being made, the original source object (otherQuestion)is not altered in any way
+     * @brief OOP57: Prefer special member functions and overloaded operators to C Standard Library functions.
+     * While performing a copy, we are using an overloaded function as opposed to a C function like strcpy()
+     * @brief OOP58: Copy operations must not mutate the source object.
+     * Although there is a copy being made, the original source object (otherQuestion) is not altered in any way.
      *
-     *@param otherQuestion is the source object of the copy. The question itself and the answer will be copied
-     *to the calling question
+     * @param otherQuestion is the source object of the copy. The question itself and the answer will be copied
+     * to the calling question.
      *
-     *@return *this which is the copied Question
+     * @return *this which is the copied Question
      */
     Question &operator=(const Question &otherQuestion)
     {
@@ -62,20 +60,23 @@ private:
     // ERR01-C Use ferror() rather than errno to check for FILE stream errors
     if (ferror(outputFile))
     {
-        throw "Error: Failed to write to file" fclose(outputFile)
+        throw "Error: Failed to write to file";
     }
+    fclose(outputFile); // Fixed the missing semicolon
     exit(0);
 }
 
 string checkName(string name)
 {
-    string output;
-
     // STR52-CPP: Use valid references, pointers, and iterators to reference elements of a basic_string
     for (char c : name)
     {
-        if (c != "a", "b", "c")
+        if (c != 'a' && c != 'b' && c != 'c')
+        {
+            // Do something with the invalid character
+        }
     }
+    return name; // Added return statement
 }
 
 int main()
@@ -95,30 +96,26 @@ int main()
     //
     ifstream questionFile("triviaquestions.txt");
 
-    if (!"triviaquestions.txt".is_open())
-    {
-        cerr << "Trouble opening the file." return (1);
+    if (!questionFile.is_open())
+    { // Fixed the incorrect condition
+        cerr << "Trouble opening the file.";
+        return 1;
     }
 
     vector<Question> questions;
-    while (!questionFile.eof())
-    {
-        Question questions;
-
-        // FIO20-C: Avoid unintentional truncation when using fgets() or fgetws().
-        // Luckily, C++ was prepared for issues that C wasn't prepared for. Although, we could use fgets()
-        // and check for trunctation, we can simply use C++'s getline() which is much safer and checks
-        // truncation for us
-        questionFile.getline();
+    string line;
+    while (getline(questionFile, line))
+    { // Fixed the getline usage
+        questions.push_back(Question(line));
     }
 
     FILE *outputFile = fopen("output.txt", "w");
-    if (outputFile = nullptr)
-    {
+    if (outputFile == nullptr)
+    { // Fixed the assignment and condition
         cerr << "Error: Could not open output file" << endl;
         return 1;
     }
-    // write something to output file here
+    // Write something to the output file here
 
     checkOutFile(outputFile);
 
