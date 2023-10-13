@@ -17,9 +17,7 @@ using namespace std;
 static const char *intro = "Welcome to the Trivia Game\n";
 
 /**
- *@brief Rules that are simply avoided in the program to be compliant.
- *
- *Rule: ERR50-CPP. Do not abruptly terminate the program.
+ * @brief Rules that are simply avoided in the program to be compliant.
  *
  *Rule
  *
@@ -27,6 +25,7 @@ static const char *intro = "Welcome to the Trivia Game\n";
  *Throughout this entire program we are assigning characters to their correct types.
  *Strings receive the string type, booleans receive the bool type, and integers receive the int type for example.
  *
+ * Rule: ERR50-CPP. Do not abruptly terminate the program.
  */
 class Question
 {
