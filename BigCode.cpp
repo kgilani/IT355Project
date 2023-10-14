@@ -17,15 +17,17 @@ using namespace std;
 static const char *intro = "Welcome to the Trivia Game\n";
 
 /**
- * @brief Rules that are simply avoided in the program to be compliant.
+ *@brief Rules that are simply avoided in the program to be compliant.
  *
- *Rule
+ *Rule: ERR50-CPP. Do not abruptly terminate the program.
+ *
+ *Rule: EXP60-CPP. Do not pass a nonstandard-layout type object across execution boundaries.
+ *This code is written in standard C++ language which avoids low-level memory manipulations such as passing nonstandard-layout types across execution boundaries.
  *
  *Rule: STR00-C. Represent characters using an appropriate type.
  *Throughout this entire program we are assigning characters to their correct types.
  *Strings receive the string type, booleans receive the bool type, and integers receive the int type for example.
  *
- * Rule: ERR50-CPP. Do not abruptly terminate the program.
  */
 class Question
 {
@@ -74,7 +76,7 @@ private:
 }
 
 /**
- *@brief STR02-C: Sanitize data passed to complex subsystems.
+ *@brief STR02-C. Sanitize data passed to complex subsystems.
  *While we don't necessarily have a subsystem per say we are still sanitizing the data by only whitelisting the alphabet.
  *This ensures that only the values we want are apart of the string and there is no malicious content.
  *
@@ -102,23 +104,107 @@ bool isValidName(string name)
     return true;
 }
 
+/**
+ *@brief ARR01-C. Do not apply the sizeof operator to a pointer when taking the size of an array.
+ *Here we are explicitly passing the size of the array as a parameter which avoids the use of the sizeof operator.
+ *
+ *@param const char hello[] is the character array that holds the greeting.
+ *
+ *@param size holds the explicit size of the array.
+ *
+ *@return output which is a character pointer to "Hello".
+ *
+ */
+char *firstUpperRestLower(const char hello[], int size)
+{
+    char *output = new char[size + 1]; // +1 for null-terminator
+
+    for (int i = 0; i < size; i++)
+    {
+        if (i == 0)
+        {
+            output[i] = std::toupper(hello[i]);
+        }
+        else
+        {
+            output[i] = std::tolower(hello[i]);
+        }
+    }
+
+    output[size] = '\0'; // Null-terminate the string
+
+    return output;
+}
+
+// Function that iterates through a container and outputs each element
+// This follows rule CTR55-CPP as it utilizes a for loop to ensure that the bounds of the container are not overflowed
+// Utilizing the for loop also removes the need for the additive operator
+bool checkContainer(const vector<int> &c)
+{
+    const vector<int>::size_type maxSize = 20;
+    string acceptedValues = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+
+    for (auto i = c.begin(); i != c.end() && i != c.begin() + maxSize; ++i)
+    {
+        if (acceptedValues.find(*i) == string::npos)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+// CTR50-CPP: Guarantee that container indices and iterators are within the valid range
+// MSC51-CPP: Ensure your random number generator is properly seeded
+// This function will number questions to be asked. Need to read questions from file
+void numberQuestions()
+{
+    vector<string> questions = {"Question 1", "Question 2", "Question 3"};
+
+    if (checkContainer(questions) == false)
+    {
+        cout << "There is an error in the questions\n";
+    }
+
+    // Use the random number generator to select a random index
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> distribution(0, questions.size() - 1);
+    int index = distribution(gen);
+
+    if (index < questions.size())
+    {
+        cout << "Randomly selected question: " << questions[index] << endl;
+    }
+    else
+    {
+        cerr << "Invalid question index." << endl;
+    }
+}
+
 int main()
 {
+
+    const char hello[] = "HELLO";
+    char *intro = firstUpperRestLower(hello, 5);
+
     /**
      *@brief STR51-CPP: Do not attempt to create a std::string from a null pointer.
      *We want to create a string from a pointer here and we run an if else statement to make sure we do not attempt to create a string from a null pointer.
      */
-    const char *hello = "Hello";
     string greeting;
-    if (hello != nullptr)
+    if (intro != nullptr)
     {
-        greeting = hello;
+        greeting = intro;
     }
     else
     {
         std::cout << "Invalid string pointer."
                   << "\n";
     }
+
+    // Delete right away as we don't need this any longer and don't want any memory leaks
+    delete[] intro;
 
     string name;
     do
@@ -153,7 +239,8 @@ int main()
     // EXP53-CPP: Do not read uninitialized memory.
     // Since the spot in memory for 'intro' was already initialized, we do not have to worry about reading
     // from an uninitialized variable
-    cout << greeting << " " << name << ", " << intro;
+    cout << greeting << " " << name << ", "
+         << "Welcome to the trivia game!\n";
 
     // FIO01-C: Be careful using functions that use file names for identification.
     //
