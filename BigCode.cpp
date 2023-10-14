@@ -19,16 +19,12 @@ static const char *intro = "Welcome to the Trivia Game\n";
 /**
  * @brief Rules that are simply avoided in the program to be compliant.
  *
- *Rule
- *
- *Rule: STR00-C. Represent characters using an appropriate type.
- *Throughout this entire program we are assigning characters to their correct types.
- *Strings receive the string type, booleans receive the bool type, and integers receive the int type for example.
+ * Rule: STR00-C. Represent characters using an appropriate type.
+ * Throughout this entire program we are assigning characters to their correct types.
+ * Strings receive the string type, booleans receive the bool type, and integers receive the int type for example.
  *
  * Rule: ERR50-CPP. Do not abruptly terminate the program.
  *
- * OOP55: Do not use pointer-to-member operators to access nonexistent members.
- * In this program, we are not using any pointer-to-member operaors to access members of objects through pointers
  */
 class Question
 {
@@ -43,10 +39,12 @@ public:
 
 private:
     /**
-     * @brief OOP57: Prefer special member functions and overloaded operators to C Standard Library functions.
+     * @brief OOP57-CPP Prefer special member functions and overloaded operators to C Standard Library functions.
      * While performing a copy, we are using an overloaded function as opposed to a C function like strcpy()
-     * @brief OOP58: Copy operations must not mutate the source object.
+     * @brief OOP58-CPP Copy operations must not mutate the source object.
      * Although there is a copy being made, the original source object (otherQuestion) is not altered in any way.
+     * @brief OOP55-CPP Do not use pointer-to-member operators to access nonexistent members.
+     * This code does not have any pointer-to-member operators, and it also does not try to access nonexistent members
      *
      * @param otherQuestion is the source object of the copy. The question itself and the answer will be copied
      * to the calling question.
@@ -77,7 +75,7 @@ private:
 }
 
 /**
- *@brief STR02-C: Sanitize data passed to complex subsystems.
+ *@brief STR02: Sanitize data passed to complex subsystems.
  *While we don't necessarily have a subsystem per say we are still sanitizing the data by only whitelisting the alphabet.
  *This ensures that only the values we want are apart of the string and there is no malicious content.
  *
@@ -119,8 +117,7 @@ int main()
     }
     else
     {
-        std::cout << "Invalid string pointer."
-                  << "\n";
+        cout << "Invalid string pointer." << endl;
     }
 
     string name;
@@ -128,7 +125,7 @@ int main()
     {
         cout << "What is your name? ";
         /**
-         *@brief STR50-CPP: Guarantee that storage for strings has sufficient space for character data and the null terminator
+         *@brief STR50-CPP Guarantee that storage for strings has sufficient space for character data and the null terminator
          *Utilizing cin with a string as opposed to a buffer we are ensuring that we have sufficient space for this data.
          */
         cin >> name;
@@ -158,7 +155,7 @@ int main()
     // from an uninitialized variable
     cout << greeting << " " << name << ", " << intro;
 
-    // FIO01-C: Be careful using functions that use file names for identification.
+    // FIO01-C(rec): Be careful using functions that use file names for identification.
     // Instead of using the file name for identificaiton, we'll use the ifstream variable
     ifstream questionFile("triviaquestions.txt");
 
@@ -168,11 +165,55 @@ int main()
         return 1;
     }
 
+    // CTR52-CPP: Guarantee that library functions do not overflow.
+    // Vectors in C++ are dynamic, but that does not mean that they cannot overflow. We are limiting the number of quesitons
+    // to make sure we do not overflow a buffer.
+
+    // CTR56-CPP: Do not use pointer arithmetic on polymorphic objects.
+    // STL containers accept iterators as parameters. In this code we do not have need to use any pointer arithmetic on polymorphic objects (which is compliant)
+    // If we did need to, we would use an iterator and a vectors of pointers to the objects to stay compliant
     vector<Question> questions;
     string line;
+
+    // INT17-C(rec): Define integer constants in an implementation-independent manner.
+    // As opposed to defining the const int in terms of a hexidecimal, we use an integer value that would be portable
+    // 50 can be represented as an int for all systems that can run C++
+    const int maxQuestions = 50;
+
+    unsigned int questionCount = 0;
+    int questionCountInt;
+
+    // FIO20-C (rec): Avoid unintentional truncation when using fgets() or fgetws().
+    // Instead of using fgets() or fetws(), since we are in C++, we can use the safer getline() which checks for truncation
     while (getline(questionFile, line))
     {
-        questions.push_back(Question(line));
+        // INT30-C: Ensure unsigned integer operations do not wrap
+        // Just in case there is a buffer issue, we check that the questionCount is not above or equal to the maximum unsigned int value.
+        if (questionCount >= numeric_limits<unsigned int>::max())
+        {
+            cout << "Error: Too many questions. Aborting." << endl;
+            break;
+        }
+
+        // INT31-C: Ensure that integer conversions do not result in lost or misinterpreted data.
+        // Although this is not the most efficient, we can verify that we can convert the unsigned int to a signed int
+        if (questionCount <= SCHAR_MAX)
+        {
+            questionCountInt = questionCount;
+        }
+
+        // INT18-C(rec): Evaluate integer expressions in a larger size before comparing or assigning to that size.
+        // When both questionCountInt and maxQuestions are compared at a larger size, we reduce integer overflow and wrapping risks
+        if (static_cast<unsigned int>(questionCountInt) < static_cast<unsigned int>(maxQuestions))
+        {
+            questions.push_back(Question(line));
+            questionCount++;
+        }
+        else
+        {
+            cout << "It is possible that not all the questions from the file were loaded. To make sure there are no buffer errors, the maximum number of questions is 50" << endl;
+            break;
+        }
     }
 
     // FIO50-CPP: Do not alternately input and output from a file stream without an intervening position call.
@@ -187,12 +228,11 @@ int main()
         return 1;
     }
 
-    questionFileOut << endl
-                    << "All the data has been read from the questions file successfully." << endl;
+    questionFileOut << "All the data has been read from the questions file successfully." << endl;
 
     FILE *outputFile = fopen("output.txt", "w");
     if (outputFile == nullptr)
-    { // Fixed the assignment and condition
+    {
         cerr << "Error: Could not open output file" << endl;
         return 1;
     }
