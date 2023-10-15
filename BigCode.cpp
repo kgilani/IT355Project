@@ -64,15 +64,27 @@ static const char *intro = "Welcome to the Trivia Game\n";
  * Rule: ERR50-CPP. Do not abruptly terminate the program.
  *
  */
+
+/** MEM00-C: Implement resource acquisition in initialization (RAII) for dynamically allocated resources
+ * In the Question class, ensure that resources are released in the destructor.
+ * MEM50-CPP: Use delete to deallocate memory allocated by new or new[]
+ * In the Question class, the custom 'new' operator requires a corresponding 'delete' operator for memory deallocation.
+ * MEM51-CPP: Free dynamically allocated resources when they are no longer needed
+ * In the main function, resources allocated using 'new' should be explicitly deallocated using 'delete'.
+ */
 class Question
 {
     string question;
     bool answer;
 
 public:
+    // MEM56-CPP: Use an array of characters to store a character string
+    // In the Question constructor, store the question as a string.
     // OOP53-CPP. Write constructor member initializers in the canonical order
     Question(string q) : question(q), answer(false) {}
 
+    // MEM55-CPP: Free dynamically allocated memory when it is no longer needed
+    // In the Question destructor, any dynamically allocated resources should be released.
     virtual ~Question() {}
 
 private:
@@ -121,6 +133,13 @@ private:
  *
  *@return true if the name contains only letters in the english alphabet otherwise false.
  */
+
+// MEM01-C: Use resource acquisition in initalialization to manage resources
+// MEM04-C: Free dynamically allocated resources when they are no longer needed
+// MEM05-C: Ensure that std::terminate() is called for unexpected exceptions
+// Implement proper resource management and exception handling throughout the program to avoid resource leaks.
+// MEM53-CPP: Do not dereference null pointers
+// In the isValidName function, ensure 'name' is not a null pointer before using it.
 bool isValidName(string name)
 {
     string charactersToInclude = "abcdefghijklmnopqrstuvwxyz";
@@ -180,75 +199,6 @@ void print(initializer_list<const char *> args)
     }
 }
 
-// Define a class named 'AlignedVector' with a custom 'new' and 'delete' operator
-struct AlignedVector {
-    alignas(32) char elems[32];
-
-    // Custom 'new' operator
-    static void* operator new(size_t nbytes) {
-        void* p = aligned_alloc(alignof(AlignedVector), nbytes);
-        if (p) {
-            return p;
-        }
-        throw std::bad_alloc();
-    }
-
-    // Custom 'delete' operator
-    static void operator delete(void* p) {
-        free(p);
-    }
-};
-
-void calculateAbsoluteValue() {
-    cout << "Absolute Value Calculator" << endl;
-
-    int inputNumber;
-    cout << "Enter an integer: ";
-    cin >> inputNumber;
-
-    cin.ignore();
-
-    int absValue = (inputNumber < 0) ? -inputNumber : inputNumber;
-
-    cout << "The absolute value of " << inputNumber << " is " << absValue << endl;
-}
-
-void shareIntegers() {
-    shared_ptr<int> sharedPtr1 = make_shared<int>();
-    shared_ptr<int> sharedPtr2(sharedPtr1);
-
-    // Modify the value through one of the shared_ptr
-    *sharedPtr1 = 42;
-
-    // Print the values (for demonstration)
-    std::cout << "Value held by sharedPtr1: " << *sharedPtr1 << std::endl;
-    std::cout << "Value held by sharedPtr2: " << *sharedPtr2 << std::endl;
-}
-
-void allocateAndUseCustomMemory() {
-    cout << "Custom Memory Allocation and Deallocation Example:" << endl;
-
-    // Allocate memory using the custom 'new' operator for AlignedVector
-    AlignedVector* customVector = new AlignedVector;
-
-    // Display information about the aligned vector (for demonstration)
-    cout << "Size of AlignedVector: " << sizeof(AlignedVector) << " bytes" << endl;
-
-    // Deallocate the aligned vector using the custom 'delete' operator
-    delete customVector;
-}
-
-void allocateLargeHeapArray() {
-    char* largeArray = static_cast<char*>(malloc(1000000));
-    if (largeArray == nullptr) {
-        cerr << "Error: Memory allocation failed" << endl;
-        exit(1);  // Return an error code to indicate failure
-    }
-
-    // Don't forget to free the allocated memory
-    free(largeArray);
-}
-
 struct Question1 {
     string question;
     string options[4];
@@ -262,6 +212,10 @@ char* getAnswer() {
     return answer;
 }
 
+// MEM52-CPP: Do not dereference null pointers
+// In the main function, ensure 'hello' is not a null pointer before using it.
+// MEM53-CPP: Do not dereference null pointers
+// In the main function, ensure 'name' is not a null pointer before using it.
 int main()
 {
     /**
@@ -311,6 +265,8 @@ int main()
     // from an uninitialized variable
     cout << greeting << " " << name << ", " << intro;
 
+    // MEM00-C: Implement RAII for dynamically allocated resources
+    // MEM01-C: Use RAII to manage resources
     // FIO01-C(rec): Be careful using functions that use file names for identification.
     // Instead of using the file name for identificaiton, we'll use the ifstream variable
     ifstream questionFile("triviaquestions.txt");
@@ -386,6 +342,9 @@ int main()
 
     questionFileOut << "All the data has been read from the questions file successfully." << endl;
 
+    // MEM52-CPP: Do not dereference null pointers
+    // MEM53-CPP: Do not dereference null pointers
+    // In the main function, ensure 'outputFile' is not a null pointer before using it.
     FILE *outputFile = fopen("output.txt", "w");
     if (outputFile == nullptr)
     {
@@ -447,19 +406,7 @@ int main()
         }
     }
 
-    // Call calculateAbsoluteValue
-    calculateAbsoluteValue();
-
-    // Call shareIntegers
-    cout << "Sharing Integers with shared_ptr:" << endl;
-    shareIntegers();
-
-    // Call allocateAndUseCustomMemory
-    allocateAndUseCustomMemory();
-
-    // Call allocateLargeHeapArray
-    allocateLargeHeapArray();
-
+    // MEM57-CPP: Avoid allocation and deallocation functions for objects of automatic storage duration
     Question1 questions1[3];
 
     // Define the trivia questions and answers
@@ -481,8 +428,6 @@ int main()
         2  // Correct answer is 'c' (Blue Whale)
     };
 
-    int score = 0;
-
     for (int i = 0; i < 3; i++) {
         cout << "Question " << (i + 1) << ": " << questions1[i].question << endl;
 
@@ -503,7 +448,6 @@ int main()
 
         if (userChoice == questions1[i].correctOption) {
             cout << "Correct!" << endl;
-            score++;
         } else {
             cout << "Incorrect. The correct answer was: " << questions1[i].options[questions1[i].correctOption] << endl;
         }
@@ -518,10 +462,14 @@ int main()
     float result = static_cast<float>(a) / b;
     cout << "Result: " << result << endl;
 
+    // MEM51-CPP: Free dynamically allocated resources when they are no longer needed
+    // MEM54-CPP: Catch handlers should order their parameter types from most derived to least derived
+    // In the main function, ensure that dynamically allocated memory is properly released when handling exceptions.
     // FIO51-CPP. Close files when they are no longer needed
     fclose(outputFile);
     questionFileOut.close();
     questionFile.close();
 
+    //MSC-52: All functions that are designed to return a value, must return a value
     return 0;
 }
