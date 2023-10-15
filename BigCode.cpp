@@ -407,25 +407,13 @@ int main()
     }
 
     // MEM57-CPP: Avoid allocation and deallocation functions for objects of automatic storage duration
-    Question1 questions1[3];
+    Question1 questions1[1];
 
     // Define the trivia questions and answers
     questions1[0] = {
         "What is the capital of France?",
         {"a) London", "b) Berlin", "c) Paris", "d) Madrid"},
         2  // Correct answer is 'c' (Paris)
-    };
-
-    questions1[1] = {
-        "Which planet is known as the Red Planet?",
-        {"a) Earth", "b) Mars", "c) Jupiter", "d) Venus"},
-        1  // Correct answer is 'b' (Mars)
-    };
-
-    questions1[2] = {
-        "What is the largest mammal in the world?",
-        {"a) Elephant", "b) Giraffe", "c) Blue Whale", "d) Lion"},
-        2  // Correct answer is 'c' (Blue Whale)
     };
 
     for (int i = 0; i < 3; i++) {
