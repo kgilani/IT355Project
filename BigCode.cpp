@@ -153,6 +153,44 @@ public:
 }
 
 /**
+ * @brief Structure for a vector with aligned memory allocation.
+ *
+ * This structure represents a vector with memory aligned to 32 bytes.
+ * It provides custom memory allocation using operator new and operator delete.
+ * This aligns memory properly for SIMD operations and other specific use cases.
+ */
+struct AlignedVector {
+    char data[32];  ///< Actual data stored in the aligned vector.
+
+    /**
+     * @brief Custom memory allocation operator.
+     *
+     * This operator allocates memory for an AlignedVector instance with proper alignment.
+     *
+     * @param size Size of memory to allocate.
+     * @return Pointer to the allocated memory.
+     * @throw std::bad_alloc if memory allocation fails.
+     */
+    static void* operator new(size_t size) {
+        if (void* p = std::aligned_alloc(alignof(AlignedVector), size)) {
+            return p;
+        }
+        throw std::bad_alloc();
+    }
+
+    /**
+     * @brief Custom memory deallocation operator.
+     *
+     * This operator deallocates memory for an AlignedVector instance.
+     *
+     * @param p Pointer to the memory to deallocate.
+     */
+    static void operator delete(void* p) {
+        free(p);
+    }
+};
+
+/**
  *@brief Function that checks if name only includes characters from the english alphabet
  *STR02-C. Sanitize data passed to complex subsystems
  *While we don't necessarily have a subsystem per say we are still sanitizing the data by only whitelisting the alphabet
@@ -312,6 +350,19 @@ char *getAnswer()
 // In the main function, ensure 'name' is not a null pointer before using it.
 int main()
 {
+    // MEM57-CPP: Avoid using default operator new for over-aligned types
+    AlignedVector* alignedVec = nullptr;
+
+    try {
+        // Allocate memory for an AlignedVector instance
+        alignedVec = new AlignedVector;
+    } catch (const std::bad_alloc& e) {
+        cerr << "Failed to allocate memory for AlignedVector: " << e.what() << endl;
+        return 1;
+    }
+    // Deallocate the alignedVec memory
+    delete alignedVec;
+    
     // STR30-C. Do not attempt to modify string literals.
     // We have defined a character array as opposed to a string literal so we can safely modify this string in the character array.
     char hello[] = "hELLO";
