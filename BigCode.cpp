@@ -6,6 +6,10 @@
 #include <random>
 #include <cctype>
 #include <initializer_list>
+#include <new>
+#include <memory>
+#include <cstring>
+#include <climits>
 
 using namespace std;
 
@@ -174,6 +178,88 @@ void print(initializer_list<const char *> args)
     {
         cout << arg << " ";
     }
+}
+
+// Define a class named 'AlignedVector' with a custom 'new' and 'delete' operator
+struct AlignedVector {
+    alignas(32) char elems[32];
+
+    // Custom 'new' operator
+    static void* operator new(size_t nbytes) {
+        void* p = aligned_alloc(alignof(AlignedVector), nbytes);
+        if (p) {
+            return p;
+        }
+        throw std::bad_alloc();
+    }
+
+    // Custom 'delete' operator
+    static void operator delete(void* p) {
+        free(p);
+    }
+};
+
+void calculateAbsoluteValue() {
+    cout << "Absolute Value Calculator" << endl;
+
+    int inputNumber;
+    cout << "Enter an integer: ";
+    cin >> inputNumber;
+
+    cin.ignore();
+
+    int absValue = (inputNumber < 0) ? -inputNumber : inputNumber;
+
+    cout << "The absolute value of " << inputNumber << " is " << absValue << endl;
+}
+
+void shareIntegers() {
+    shared_ptr<int> sharedPtr1 = make_shared<int>();
+    shared_ptr<int> sharedPtr2(sharedPtr1);
+
+    // Modify the value through one of the shared_ptr
+    *sharedPtr1 = 42;
+
+    // Print the values (for demonstration)
+    std::cout << "Value held by sharedPtr1: " << *sharedPtr1 << std::endl;
+    std::cout << "Value held by sharedPtr2: " << *sharedPtr2 << std::endl;
+}
+
+void allocateAndUseCustomMemory() {
+    cout << "Custom Memory Allocation and Deallocation Example:" << endl;
+
+    // Allocate memory using the custom 'new' operator for AlignedVector
+    AlignedVector* customVector = new AlignedVector;
+
+    // Display information about the aligned vector (for demonstration)
+    cout << "Size of AlignedVector: " << sizeof(AlignedVector) << " bytes" << endl;
+
+    // Deallocate the aligned vector using the custom 'delete' operator
+    delete customVector;
+}
+
+void allocateLargeHeapArray() {
+    char* largeArray = static_cast<char*>(malloc(1000000));
+    if (largeArray == nullptr) {
+        cerr << "Error: Memory allocation failed" << endl;
+        exit(1);  // Return an error code to indicate failure
+    }
+
+    // Don't forget to free the allocated memory
+    free(largeArray);
+}
+
+struct Question1 {
+    string question;
+    string options[4];
+    int correctOption;
+};
+
+char* getAnswer() {
+    const int maxAnswerLength = 100;
+    char* answer = new char[maxAnswerLength];
+    cin.getline(answer, maxAnswerLength);
+    return answer;
 }
 
 int main()
@@ -359,6 +445,70 @@ int main()
                 cout << "Caught an unknown exception." << endl;
             }
         }
+    }
+
+    // Call calculateAbsoluteValue
+    calculateAbsoluteValue();
+
+    // Call shareIntegers
+    cout << "Sharing Integers with shared_ptr:" << endl;
+    shareIntegers();
+
+    // Call allocateAndUseCustomMemory
+    allocateAndUseCustomMemory();
+
+    // Call allocateLargeHeapArray
+    allocateLargeHeapArray();
+
+    Question1 questions1[3];
+
+    // Define the trivia questions and answers
+    questions1[0] = {
+        "What is the capital of France?",
+        {"a) London", "b) Berlin", "c) Paris", "d) Madrid"},
+        2  // Correct answer is 'c' (Paris)
+    };
+
+    questions1[1] = {
+        "Which planet is known as the Red Planet?",
+        {"a) Earth", "b) Mars", "c) Jupiter", "d) Venus"},
+        1  // Correct answer is 'b' (Mars)
+    };
+
+    questions1[2] = {
+        "What is the largest mammal in the world?",
+        {"a) Elephant", "b) Giraffe", "c) Blue Whale", "d) Lion"},
+        2  // Correct answer is 'c' (Blue Whale)
+    };
+
+    int score = 0;
+
+    for (int i = 0; i < 3; i++) {
+        cout << "Question " << (i + 1) << ": " << questions1[i].question << endl;
+
+        for (int j = 0; j < 4; j++) {
+            cout << questions1[i].options[j] << endl;
+        }
+
+        cout << "Your answer (a, b, c, or d): ";
+        char* userAnswer = getAnswer();
+
+        int userChoice = -1;
+
+        if (strlen(userAnswer) > 0) {
+            userChoice = userAnswer[0] - 'a';
+        }
+
+        delete[] userAnswer;
+
+        if (userChoice == questions1[i].correctOption) {
+            cout << "Correct!" << endl;
+            score++;
+        } else {
+            cout << "Incorrect. The correct answer was: " << questions1[i].options[questions1[i].correctOption] << endl;
+        }
+
+        cout << endl;
     }
 
     // Rule: MSC00-C: Compile cleanly at high warning levels
