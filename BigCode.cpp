@@ -329,13 +329,6 @@ void print(initializer_list<const char *> args)
     }
 }
 
-struct Question1
-{
-    string question;
-    string options[4];
-    int correctOption;
-};
-
 char *getAnswer()
 {
     const int maxAnswerLength = 100;
@@ -356,7 +349,7 @@ int main()
     try {
         // Allocate memory for an AlignedVector instance
         alignedVec = new AlignedVector;
-    } catch (const std::bad_alloc& e) {
+    } catch (const bad_alloc& e) {
         cerr << "Failed to allocate memory for AlignedVector: " << e.what() << endl;
         return 1;
     }
@@ -581,49 +574,6 @@ int main()
                 cout << "Caught an unknown exception." << endl;
             }
         }
-    }
-
-    // MEM57-CPP: Avoid allocation and deallocation functions for objects of automatic storage duration
-    Question1 questions1[1];
-
-    // Define the trivia questions and answers
-    questions1[0] = {
-        "What is the capital of France?",
-        {"a) London", "b) Berlin", "c) Paris", "d) Madrid"},
-        2 // Correct answer is 'c' (Paris)
-    };
-
-    for (int i = 0; i < 3; i++)
-    {
-        cout << "Question " << (i + 1) << ": " << questions1[i].question << endl;
-
-        for (int j = 0; j < 4; j++)
-        {
-            cout << questions1[i].options[j] << endl;
-        }
-
-        cout << "Your answer (a, b, c, or d): ";
-        char *userAnswer = getAnswer();
-
-        int userChoice = -1;
-
-        if (strlen(userAnswer) > 0)
-        {
-            userChoice = userAnswer[0] - 'a';
-        }
-
-        delete[] userAnswer;
-
-        if (userChoice == questions1[i].correctOption)
-        {
-            cout << "Correct!" << endl;
-        }
-        else
-        {
-            cout << "Incorrect. The correct answer was: " << questions1[i].options[questions1[i].correctOption] << endl;
-        }
-
-        cout << endl;
     }
 
     checkOutFile(outputFile);
