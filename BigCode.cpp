@@ -160,7 +160,7 @@ public:
  * This aligns memory properly for SIMD operations and other specific use cases.
  */
 struct AlignedVector {
-    char data[32];  ///< Actual data stored in the aligned vector.
+    char data[32];  // Actual data stored in the aligned vector.
 
     /**
      * @brief Custom memory allocation operator.
@@ -191,17 +191,17 @@ struct AlignedVector {
 };
 
 /**
- *@brief Function that checks if name only includes characters from the english alphabet
+ *@brief Function that checks if the name only includes characters from the English alphabet
  *STR02-C. Sanitize data passed to complex subsystems
- *While we don't necessarily have a subsystem per say we are still sanitizing the data by only whitelisting the alphabet
- *This ensures that only the values we want are apart of the string and there is no malicious content.
+ *While we don't necessarily have a subsystem per se we are still sanitizing the data by only whitelisting the alphabet
+ *This ensures that only the values we want are a part of the string and there is no malicious content.
  *
  *@param name is the name the user inputs when they run the program.
  *
- *@return true if the name contains only letters in the english alphabet otherwise false.
+ *@return true if the name contains only letters in the English alphabet otherwise false.
  */
 
-// MEM01-C: Use resource acquisition in initalialization to manage resources
+// MEM01-C: Use resource acquisition in initialization to manage resources
 // MEM04-C: Free dynamically allocated resources when they are no longer needed
 // MEM05-C: Ensure that std::terminate() is called for unexpected exceptions
 // Implement proper resource management and exception handling throughout the program to avoid resource leaks.
@@ -228,7 +228,7 @@ bool isValidName(string name)
 /**
  *@brief Function that takes in a constant character array and sets the first letter to uppercase and the rest to lowercase
  *ARR01-C. Do not apply the sizeof operator to a pointer when taking the size of an array.
- *Here we are explicitly passing the size of the array as a parameter which avoids the use of the sizeof operator.
+ *Here we are explicitly passing the size of the array as a parameter which avoids using the sizeof operator.
  *
  *@param const char hello[] is the character array that holds the greeting.
  *
