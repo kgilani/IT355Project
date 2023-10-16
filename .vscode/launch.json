@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/cameroncrone/Desktop/2023 (Fall)/IT 355/IT355Project",
+      "program": "/Users/cameroncrone/Desktop/2023 (Fall)/IT 355/IT355Project/build/Debug/outDebug"
+    }
+  ]
+}
