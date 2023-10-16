@@ -62,6 +62,9 @@ static const char *intro = "Welcome to the Trivia Game\n";
  * Strings receive the string type, booleans receive the bool type, and integers receive the int type for example.
  *
  * Rule: ERR50-CPP. Do not abruptly terminate the program.
+ * Rule: CON52-CPP. Prevent data races when accessing bit-fields from multiple threads
+ * Rule: CL54-CPP. Overload allocation and deallocation functions as a pair in the same scope
+ * Rule: ERR59-CPP: Do not throw an exception across execution boundaries
  *
  */
 
@@ -159,8 +162,9 @@ public:
  * It provides custom memory allocation using operator new and operator delete.
  * This aligns memory properly for SIMD operations and other specific use cases.
  */
-struct AlignedVector {
-    char data[32];  // Actual data stored in the aligned vector.
+struct AlignedVector
+{
+    char data[32]; ///< Actual data stored in the aligned vector.
 
     /**
      * @brief Custom memory allocation operator.
@@ -171,11 +175,13 @@ struct AlignedVector {
      * @return Pointer to the allocated memory.
      * @throw std::bad_alloc if memory allocation fails.
      */
-    static void* operator new(size_t size) {
-        if (void* p = std::aligned_alloc(alignof(AlignedVector), size)) {
+    static void *operator new(size_t size)
+    {
+        if (void *p = aligned_alloc(alignof(AlignedVector), size))
+        {
             return p;
         }
-        throw std::bad_alloc();
+        throw bad_alloc();
     }
 
     /**
@@ -185,23 +191,24 @@ struct AlignedVector {
      *
      * @param p Pointer to the memory to deallocate.
      */
-    static void operator delete(void* p) {
+    static void operator delete(void *p)
+    {
         free(p);
     }
 };
 
 /**
- *@brief Function that checks if the name only includes characters from the English alphabet
+ *@brief Function that checks if name only includes characters from the english alphabet
  *STR02-C. Sanitize data passed to complex subsystems
- *While we don't necessarily have a subsystem per se we are still sanitizing the data by only whitelisting the alphabet
- *This ensures that only the values we want are a part of the string and there is no malicious content.
+ *While we don't necessarily have a subsystem per say we are still sanitizing the data by only whitelisting the alphabet
+ *This ensures that only the values we want are apart of the string and there is no malicious content.
  *
  *@param name is the name the user inputs when they run the program.
  *
- *@return true if the name contains only letters in the English alphabet otherwise false.
+ *@return true if the name contains only letters in the english alphabet otherwise false.
  */
 
-// MEM01-C: Use resource acquisition in initialization to manage resources
+// MEM01-C: Use resource acquisition in initalialization to manage resources
 // MEM04-C: Free dynamically allocated resources when they are no longer needed
 // MEM05-C: Ensure that std::terminate() is called for unexpected exceptions
 // Implement proper resource management and exception handling throughout the program to avoid resource leaks.
@@ -228,7 +235,7 @@ bool isValidName(string name)
 /**
  *@brief Function that takes in a constant character array and sets the first letter to uppercase and the rest to lowercase
  *ARR01-C. Do not apply the sizeof operator to a pointer when taking the size of an array.
- *Here we are explicitly passing the size of the array as a parameter which avoids using the sizeof operator.
+ *Here we are explicitly passing the size of the array as a parameter which avoids the use of the sizeof operator.
  *
  *@param const char hello[] is the character array that holds the greeting.
  *
@@ -329,14 +336,6 @@ void print(initializer_list<const char *> args)
     }
 }
 
-char *getAnswer()
-{
-    const int maxAnswerLength = 100;
-    char *answer = new char[maxAnswerLength];
-    cin.getline(answer, maxAnswerLength);
-    return answer;
-}
-
 // MEM52-CPP: Do not dereference null pointers
 // In the main function, ensure 'hello' is not a null pointer before using it.
 // MEM53-CPP: Do not dereference null pointers
@@ -344,18 +343,21 @@ char *getAnswer()
 int main()
 {
     // MEM57-CPP: Avoid using default operator new for over-aligned types
-    AlignedVector* alignedVec = nullptr;
+    AlignedVector *alignedVec = nullptr;
 
-    try {
+    try
+    {
         // Allocate memory for an AlignedVector instance
         alignedVec = new AlignedVector;
-    } catch (const bad_alloc& e) {
+    }
+    catch (const std::bad_alloc &e)
+    {
         cerr << "Failed to allocate memory for AlignedVector: " << e.what() << endl;
         return 1;
     }
     // Deallocate the alignedVec memory
     delete alignedVec;
-    
+
     // STR30-C. Do not attempt to modify string literals.
     // We have defined a character array as opposed to a string literal so we can safely modify this string in the character array.
     char hello[] = "hELLO";
@@ -515,84 +517,82 @@ int main()
     // MEM52-CPP: Do not dereference null pointers
     // MEM53-CPP: Do not dereference null pointers
     // In the main function, ensure 'outputFile' is not a null pointer before using it.
-    FILE *outputFile = fopen("output.txt", "w");
-    if (outputFile == nullptr)
     {
-        cerr << "Error: Could not open output file" << endl;
-        goto cleanup;
-    }
+        FILE *outputFile = fopen("output.txt", "w");
+        if (outputFile == nullptr)
+        {
+            cerr << "Error: Could not open output file" << endl;
+            return -1; // goto cleanup;
+        }
 
-    // Write something to the output file here
-    /**
-     * Not the most practical but most exception handling rules are covered in this segment. Feel free to change if needed
-     */
-    try
-    {
-        // ERR56-CPP: Guarantee exception safety
-        // Perform an operation that might throw an exception
-        isValidName(name);
-
-        // ERR54-CPP: Catch handlers should order their parameter types from most derived to least derived
+        // Write something to the output file here
 
         try
         {
-            isValidName(name); // Call the function that might throw an exception
+            // ERR56-CPP: Guarantee exception safety
+            // Perform an operation that might throw an exception
+            isValidName(name);
+
+            // ERR54-CPP: Catch handlers should order their parameter types from most derived to least derived
+
+            try
+            {
+                isValidName(name); // Call the function that might throw an exception
+            }
+            catch (const exception &e)
+            {
+                // ERR55-CPP: Honor exception specifications
+                cerr << "Exception caught: " << e.what() << endl;
+            }
         }
         catch (const exception &e)
         {
-            // ERR55-CPP: Honor exception specifications
-            cerr << "Exception caught: " << e.what() << endl;
+            // Handle exceptions
+            if (uncaught_exceptions() == 1)
+            {
+                // ERR58-CPP: Handle all exceptions thrown before main() begins executing
+                cerr << "Exception before or during main: " << e.what() << endl;
+                return EXIT_FAILURE;
+            }
+            else
+            {
+                // ERR54-CPP: Catch handlers should order their parameter types from most derived to least derived
+                try
+                {
+                    // Re-throw the exception to order the catch handlers correctly
+                    throw;
+                }
+                catch (DerivedException &derivedE)
+                {
+                    cout << "Caught DerivedException: " << derivedE.what() << endl;
+                }
+                catch (BaseException &baseE)
+                {
+                    cout << "Caught BaseException: " << baseE.what() << endl;
+                }
+                catch (...)
+                {
+                    cout << "Caught an unknown exception." << endl;
+                }
+            }
         }
+
+        checkOutFile(outputFile);
+        // Rule: MSC00-C: Compile cleanly at high warning levels
+        int a = 10;
+        int b = 1; // Avoid division by zero
+        float result = static_cast<float>(a) / b;
+
+        // MEM51-CPP: Free dynamically allocated resources when they are no longer needed
+        // MEM54-CPP: Catch handlers should order their parameter types from most derived to least derived
+        // In the main function, ensure that dynamically allocated memory is properly released when handling exceptions.
+        // FIO51-CPP. Close files when they are no longer needed
+        fclose(outputFile);
+        questionFileOut.close();
+        questionFile.close();
+
+        // MSC-52: All functions that are designed to return a value, must return a value
     }
-    catch (const exception &e)
-    {
-        // Handle exceptions
-        if (uncaught_exceptions() == 1)
-        {
-            // ERR58-CPP: Handle all exceptions thrown before main() begins executing
-            cerr << "Exception before or during main: " << e.what() << endl;
-            return EXIT_FAILURE;
-        }
-        else
-        {
-            // ERR54-CPP: Catch handlers should order their parameter types from most derived to least derived
-            try
-            {
-                // Re-throw the exception to order the catch handlers correctly
-                throw;
-            }
-            catch (DerivedException &derivedE)
-            {
-                cout << "Caught DerivedException: " << derivedE.what() << endl;
-            }
-            catch (BaseException &baseE)
-            {
-                cout << "Caught BaseException: " << baseE.what() << endl;
-            }
-            catch (...)
-            {
-                cout << "Caught an unknown exception." << endl;
-            }
-        }
-    }
-
-    checkOutFile(outputFile);
-    // Rule: MSC00-C: Compile cleanly at high warning levels
-    // Ways to use?
-    int a = 10;
-    int b = 1; // Avoid division by zero
-    float result = static_cast<float>(a) / b;
-    cout << "Result: " << result << endl;
-
-    // MEM51-CPP: Free dynamically allocated resources when they are no longer needed
-    // MEM54-CPP: Catch handlers should order their parameter types from most derived to least derived
-    // In the main function, ensure that dynamically allocated memory is properly released when handling exceptions.
-    // FIO51-CPP. Close files when they are no longer needed
-    fclose(outputFile);
-    questionFileOut.close();
-    questionFile.close();
-
-// MSC-52: All functions that are designed to return a value, must return a value
 cleanup:
     // WIN30-C- Properly pair allocation and deallocation functions
     //    for(auto question : questions) {
